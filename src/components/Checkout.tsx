@@ -84,7 +84,7 @@ Please confirm this order to proceed. Thank you for choosing Kobi Burger! 🥟
     `.trim();
 
     const encodedMessage = encodeURIComponent(orderDetails);
-    const messengerUrl = `https://m.me/100082987099531?text=${encodedMessage}`;
+    const messengerUrl = `https://m.me/kobiburgerph?text=${encodedMessage}`;
     
     window.open(messengerUrl, '_blank');
     
