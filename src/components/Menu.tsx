@@ -2,17 +2,6 @@ import React from 'react';
 import { MenuItem, CartItem } from '../types';
 import { useCategories } from '../hooks/useCategories';
 import MenuItemCard from './MenuItemCard';
-import MobileNav from './MobileNav';
-
-// Preload images for better performance
-const preloadImages = (items: MenuItem[]) => {
-  items.forEach(item => {
-    if (item.image) {
-      const img = new Image();
-      img.src = item.image;
-    }
-  });
-};
 
 interface MenuProps {
   menuItems: MenuItem[];
@@ -23,97 +12,61 @@ interface MenuProps {
 
 const Menu: React.FC<MenuProps> = ({ menuItems, addToCart, cartItems, updateQuantity }) => {
   const { categories } = useCategories();
-  const [activeCategory, setActiveCategory] = React.useState('hot-coffee');
-
-  // Preload images when menu items change
-  React.useEffect(() => {
-    if (menuItems.length > 0) {
-      // Preload images for visible category first
-      const visibleItems = menuItems.filter(item => item.category === activeCategory);
-      preloadImages(visibleItems);
-      
-      // Then preload other images after a short delay
-      setTimeout(() => {
-        const otherItems = menuItems.filter(item => item.category !== activeCategory);
-        preloadImages(otherItems);
-      }, 1000);
-    }
-  }, [menuItems, activeCategory]);
+  const popularItems = menuItems.filter(item => item.popular);
 
   const handleCategoryClick = (categoryId: string) => {
-    setActiveCategory(categoryId);
-    const element = document.getElementById(categoryId);
+    const element = document.getElementById(`category-${categoryId}`);
     if (element) {
-      const headerHeight = 64; // Header height
-      const mobileNavHeight = 60; // Mobile nav height
-      const offset = headerHeight + mobileNavHeight + 20; // Extra padding
-      const elementPosition = element.offsetTop - offset;
-      
-      window.scrollTo({
-        top: elementPosition,
-        behavior: 'smooth'
-      });
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
-  React.useEffect(() => {
-    if (categories.length > 0) {
-      // Set default to dim-sum if it exists, otherwise first category
-      const defaultCategory = categories.find(cat => cat.id === 'dim-sum') || categories[0];
-      if (!categories.find(cat => cat.id === activeCategory)) {
-        setActiveCategory(defaultCategory.id);
-      }
-    }
-  }, [categories, activeCategory]);
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      const sections = categories.map(cat => document.getElementById(cat.id)).filter(Boolean);
-      const scrollPosition = window.scrollY + 200;
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        const section = sections[i];
-        if (section && section.offsetTop <= scrollPosition) {
-          setActiveCategory(categories[i].id);
-          break;
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-
   return (
-    <>
-      <MobileNav 
-        activeCategory={activeCategory}
-        onCategoryClick={handleCategoryClick}
-      />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center mb-12">
-        <h2 className="text-4xl font-noto font-semibold text-black mb-4">Our Menu</h2>
-        <p className="text-gray-600 max-w-2xl mx-auto">
-          Discover our selection of authentic dim sum, flavorful noodles, and traditional Asian dishes, 
-          all prepared with fresh ingredients and authentic techniques.
-        </p>
+    <div className="min-h-screen bg-white dark:bg-dark-400" style={{ scrollBehavior: 'smooth' }}>
+      {/* Modern Menu Header */}
+      <div className="bg-gradient-to-r from-charcoal-900 to-charcoal-800 dark:from-dark-100 dark:to-dark-200 py-16 px-4">
+        <div className="max-w-7xl mx-auto text-center">
+          <h1 className="text-5xl md:text-6xl font-serif font-bold text-white mb-4">
+            Our Menu
+          </h1>
+          <p className="text-xl text-charcoal-200 dark:text-charcoal-300 max-w-2xl mx-auto leading-relaxed">
+            Crafted with premium ingredients and bold flavors
+          </p>
+        </div>
       </div>
 
-      {categories.map((category) => {
-        const categoryItems = menuItems.filter(item => item.category === category.id);
-        
-        if (categoryItems.length === 0) return null;
-        
-        return (
-          <section key={category.id} id={category.id} className="mb-16">
-            <div className="flex items-center mb-8">
-              <span className="text-3xl mr-3">{category.icon}</span>
-              <h3 className="text-3xl font-noto font-medium text-black">{category.name}</h3>
+      {/* Category Navigation */}
+      <div className="sticky top-16 z-40 bg-white/95 dark:bg-dark-100/95 backdrop-blur-sm border-b border-charcoal-200 dark:border-charcoal-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex overflow-x-auto scrollbar-hide py-4 space-x-1">
+            {categories.map((category) => (
+              <button
+                key={category.id}
+                onClick={() => handleCategoryClick(category.id)}
+                className="flex items-center space-x-2 px-6 py-3 rounded-full whitespace-nowrap transition-all duration-200 text-charcoal-700 dark:text-charcoal-300 hover:bg-charcoal-100 dark:hover:bg-charcoal-800 hover:bg-mustard-100 dark:hover:bg-mustard-900"
+              >
+                <span className="text-lg">{category.icon}</span>
+                <span className="font-medium">{category.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Popular Items Section */}
+      {popularItems.length > 0 && (
+        <section className="py-12 px-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-serif font-bold text-charcoal-900 dark:text-white mb-2">
+                Popular Choices
+              </h2>
+              <p className="text-charcoal-600 dark:text-charcoal-300">
+                Customer favorites you can't miss
+              </p>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {categoryItems.map((item) => {
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+              {popularItems.slice(0, 3).map((item) => {
                 const cartItem = cartItems.find(cartItem => cartItem.id === item.id);
                 return (
                   <MenuItemCard
@@ -126,11 +79,54 @@ const Menu: React.FC<MenuProps> = ({ menuItems, addToCart, cartItems, updateQuan
                 );
               })}
             </div>
-          </section>
-        );
-      })}
-      </main>
-    </>
+          </div>
+        </section>
+      )}
+
+      {/* Main Menu Section - All Categories */}
+      <div className="py-8 px-4">
+        <div className="max-w-7xl mx-auto">
+          {categories.map((category) => {
+            const categoryItems = menuItems.filter(item => item.category === category.id);
+            
+            if (categoryItems.length === 0) return null;
+            
+            return (
+              <section 
+                key={category.id} 
+                id={`category-${category.id}`}
+                className="mb-16 scroll-mt-24"
+              >
+                <div className="mb-8">
+                  <h2 className="text-3xl font-serif font-bold text-charcoal-900 dark:text-white mb-2 flex items-center">
+                    <span className="text-2xl mr-3">{category.icon}</span>
+                    {category.name}
+                  </h2>
+                  <p className="text-charcoal-600 dark:text-charcoal-300">
+                    {categoryItems.length} items available
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {categoryItems.map((item) => {
+                    const cartItem = cartItems.find(cartItem => cartItem.id === item.id);
+                    return (
+                      <MenuItemCard
+                        key={item.id}
+                        item={item}
+                        onAddToCart={addToCart}
+                        quantity={cartItem?.quantity || 0}
+                        onUpdateQuantity={updateQuantity}
+                      />
+                    );
+                  })}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 };
 

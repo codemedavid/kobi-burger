@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { useCart } from './hooks/useCart';
 import Header from './components/Header';
-import Hero from './components/Hero';
 import Menu from './components/Menu';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
@@ -20,7 +19,7 @@ function MainApp() {
   };
 
   return (
-    <div className="min-h-screen bg-cream-50 font-inter">
+    <div className="min-h-screen bg-white dark:bg-dark-400 font-sans">
       <Header 
         cartItemsCount={cart.getTotalItems()}
         onCartClick={() => handleViewChange('cart')}
@@ -28,15 +27,12 @@ function MainApp() {
       />
       
       {currentView === 'menu' && (
-        <>
-          <Hero />
-          <Menu 
-            menuItems={menuItems}
-            addToCart={cart.addToCart}
-            cartItems={cart.cartItems}
-            updateQuantity={cart.updateQuantity}
-          />
-        </>
+        <Menu 
+          menuItems={menuItems}
+          addToCart={cart.addToCart}
+          cartItems={cart.cartItems}
+          updateQuantity={cart.updateQuantity}
+        />
       )}
       
       {currentView === 'cart' && (
